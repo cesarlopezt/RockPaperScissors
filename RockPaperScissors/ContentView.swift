@@ -21,7 +21,7 @@ struct IconOptionButton: View {
         Button(content, action: action)
             .font(.largeTitle)
             .padding(15)
-            .background(Color.secondary.opacity(0.2))
+            .background(.secondary.opacity(0.2))
             .clipShape(
                 RoundedRectangle(cornerRadius: 10)
             ).overlay(
@@ -32,31 +32,35 @@ struct IconOptionButton: View {
 }
 
 struct ContentView: View {
-    @State private var letTheApp = "win"
+    @State private var letTheAppWin = true
     @State private var appChoice = "📄"
+    @State private var score = 0
+    @State private var questionNum = 1
+    @State private var showingAlert = false
     
-    var choices = ["🪨", "📄", "✂️"]
+    let choices = ["🪨", "📄", "✂️"]
 
     var body: some View {
         VStack {
-            Text("Rock, Paper, Scissors")
+            Text("Rock, Paper, Scissors").font(.title2)
             Spacer()
             VStack {
                 HStack {
-                    Text("Q1").font(.title3)
+                    Text("Q\(questionNum)")
+                        .font(.title3)
                     Spacer()
-                    Text("Score: 10")
+                    Text("Score: \(score)")
                         .font(.title3)
                 }
                 VStack(spacing: 10) {
                     Text("I choose:")
                         .font(.title2)
                         .bold()
-                    Text("🪨")
-                        .font(.largeTitle)
-                    Text(letTheApp == "win" ? "Let me win" : "I want to loose")
+                    Text(appChoice)
+                        .font(.system(size: 100))
+                    Text(letTheAppWin ? "Let me win" : "I want to loose")
                         .font(.title)
-                        .foregroundColor(letTheApp == "win" ? .green : .red)
+                        .foregroundColor(letTheAppWin ? .green : .red)
                         .bold()
                 }
                 .frame(maxWidth: .infinity)
@@ -72,16 +76,48 @@ struct ContentView: View {
             HStack(spacing: 20) {
                 ForEach(choices, id: \.self) { choice in
                     IconOptionButton(content: choice) {
-//                        evaluateAnswer(with: choice)
+                        evaluateAnswer(with: choice)
                     }
                 }
             }
         }
         .padding()
+        .alert("End", isPresented: $showingAlert) {
+            Button("Restart Game") {
+                score = 0
+                questionNum = 0
+                nextQuestion()
+            }
+        } message: {
+            Text("Your score was \(score)")
+        }
 
     }
     
-
+    func evaluateAnswer(with choice: String) {
+        let userWon = choice == optionToWin[appChoice]
+        
+        if choice == appChoice {
+            
+        } else if letTheAppWin && !userWon {
+            score += 1
+        } else if !letTheAppWin && userWon {
+            score += 1
+        } else {
+            score -= 1
+        }
+        nextQuestion()
+    }
+    
+    func nextQuestion() {
+        if (questionNum < 10) {
+            appChoice = choices.randomElement()!
+            letTheAppWin.toggle()
+            questionNum += 1
+        } else {
+            showingAlert = true
+        }
+    }
 }
 
 struct ContentView_Previews: PreviewProvider {
